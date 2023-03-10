@@ -55,7 +55,7 @@ def login(request: Request, data: OAuth2PasswordRequestForm = Depends()):
         return templates.TemplateResponse("login.html", {"request": request, 'message': 'Can not connect to API.'})
     
 
-@app.get('/logout')
+@app.post('/logout')
 def logout(user=Depends(manager)):
     response = RedirectResponse(url="/login",status_code=status.HTTP_302_FOUND)
     manager.set_cookie(response, None)
@@ -64,3 +64,8 @@ def logout(user=Depends(manager)):
 @app.get("/")
 def read_root(user=Depends(manager)):
     return RedirectResponse(url="/data",status_code=status.HTTP_302_FOUND)
+
+@app.get("/favicon.ico")
+def favicon(user=Depends(manager)):
+    return ''
+

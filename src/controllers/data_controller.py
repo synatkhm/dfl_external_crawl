@@ -27,11 +27,11 @@ class DataController(Controller):
         areas = AreasModel().from_json(pre_info['data']['area'])
         city_list = CitiesModel().array_to_json(cities)
         area_list = AreasModel().array_to_json(areas)
-        return super().templates.TemplateResponse("home.html", {"request": request,'area_list': area_list, 'city_list': city_list})
+        return super().templates.TemplateResponse("home.html", {"request": request,'email':self.user["user"]['email'],'area_list': area_list, 'city_list': city_list})
 
     def crawl_new_aid(self, request, area_id):
-        os.system(f'python {os.getcwd()}/src/scrapy_crawl/scrapy_loader.py {area_id} { self.user["token"].split("|")[1]}')
-        return 'done'
+        # os.system(f'python {os.getcwd()}/src/scrapy_crawl/scrapy_loader.py {area_id} { self.user["token"].split("|")[1]}')
+        return JSONResponse(status_code=status.HTTP_200_OK, content={'status': True, 'message': 'Crawl new aid success.'})
     
     def get_crawl_new_aid_log(self, request, area_id):
         return super().templates.TemplateResponse("logs.html", {"request": request,'area_id': area_id})
@@ -56,7 +56,13 @@ class DataController(Controller):
             return ''
         
     def upload_crawl_new_aid(self, request, area_id):
-        filepath=f'{os.getcwd()}/storage/crawl_new_aid/result_{area_id}_crawl_new_aid.json'
-        result=Request(Api.upload_file_crawl_new_aid, user=self.user).post_file(filepath)
+        try:
+            filepath=f'{os.getcwd()}/storage/crawl_new_aid/result_{area_id}_crawl_new_aid.json'
+            result=Request(Api.upload_file_crawl_new_aid, user=self.user).post_file(filepath)
+        except:
+            result={
+                'status': False,
+                'message': 'The selected area is data empty.'
+            }
         return JSONResponse(status_code=status.HTTP_200_OK, content=result)
 

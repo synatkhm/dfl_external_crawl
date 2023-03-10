@@ -44,7 +44,7 @@ function onClickCrawlNewAid() {
     if (selected_area.value == 'Choose area') {
         sendMessage('Message: Please choose area.');
     } else {
-        sendMessage('Crawl new aid is in progress.', true)
+        sendMessage('Crawl new aid is in progress...', true)
         requestCrawlNewAid(selected_area.value);
     }
 
@@ -68,43 +68,30 @@ function uploadData(){
         sendMessage('Message: Please choose area.');
     } else {
         var area_id = selected_area.value;
-        console.log(area_id);
         sendMessage('Upload data is in progress...', true)
         try {
             var url = window.location.href + "upload-crawl-new-aid/" + area_id;
             axios.post(url)
                 .then(function (response) {
                     if (response.status == 200) {
-                        if (response.data != "") {
-                            if(response.data['status']){
-                                sendMessage(response.data['message'], true);
-                                return
-                            }
+                        if (response.data['status'] == true) {
+                            sendMessage(response.data['message'], true);
+                        }else{
+                            sendMessage(response.data['message']);
                         }
+                    }else{
+                        sendMessage('Upload data fail.');
                     }
-                    sendMessage('Upload data fail.');
+                   
                 })
         } catch (e) {
-            console.log(e.message)
             sendMessage('Upload data fail.');
+            console.log(e.message)
         }
     }
 }
 
-function requestCrawlNewAid(area_id) {
-    var url = window.location.href + 'crawl-new-aid';
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ "area_id": area_id })
-    })
-        .then(response => response.json())
-        .then(response => console.log(JSON.stringify(response)))
-    console.log('start requestCrawlNewAid', area_id);
-}
+
 
 function sendMessage(txt, is_success=false) {
     document.getElementById('label_message_primary').innerText='';
@@ -148,7 +135,6 @@ function add_data_into_table(jsonData) {
     table.rows.add(data).draw();
 }
 
-
 async function getData() {
     var selected_area = document.getElementById('areas_name');
     var area_id = selected_area.value;
@@ -174,3 +160,25 @@ async function getData() {
 }
 
 
+function onClickRefresh(){
+    getData();
+}
+
+function requestCrawlNewAid(area_id) {
+    var url = window.location.href + 'crawl-new-aid';
+    axios.post(url,{ "area_id": area_id } 
+      )
+                .then(function (response) {
+                    sendMessage(response.data['message'], true)
+                    getData();
+                })
+    window.open(window.location.href + 'crawl-new-aid/logs/' + area_id, '_blank');
+}
+
+function logOut(){
+    console.log();
+    axios.post(window.location.origin+'/logout')
+                .then(function (response) {
+                    window.location.href=window.location.origin+'/login'
+                })
+}

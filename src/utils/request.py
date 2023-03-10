@@ -22,6 +22,7 @@ class Request:
         files = {'file': open(file_path,'rb')}
         result=requests.post(self.url,files=files, headers=headers)
         dict_result= json.loads(str(result.text))
+        return dict_result
         if dict_result['status']:
             return dict_result
         else:

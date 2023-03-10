@@ -11,7 +11,6 @@ if __name__ == "__main__":
         })
         process.crawl(ScrapyCrawlNewAidSpider, area_id=area_id, token=token)
         process.start()
-        print()
     except IndexError as e:
         print(f'Require city_id and area_id, Exception error {str(e)}')
 

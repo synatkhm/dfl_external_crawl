@@ -8,7 +8,7 @@ import os
 from scrapy.http.request import Request
 import time
 from urllib.parse import urljoin
-# from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
 from lxml import html
 
 import json, sys, re
@@ -16,13 +16,12 @@ sys.path.append(os.getcwd())
 from src.models.area_model import AreaModel
 from src.models.city_model import CityModel
 from datetime import datetime
+from src.scrapy_crawl.utils.check_and_replace import check_and_replace
+from src.scrapy_crawl.utils.check_sublist import is_sub_list_aid
+from src.utils.api import prefecture_info_by_area_id
+from src.scrapy_crawl.utils.utils import IGNORED_EXTENSIONS, emoji_pattern
 
-emoji_pattern = re.compile("["
-                u"\U0001F600-\U0001F64F"  # emoticons
-                u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                                "]+", flags=re.UNICODE)
+
 
 class ScrapyCrawlNewAidSpider(scrapy.Spider):
     
@@ -36,7 +35,6 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
         }
     
     log_file_path=f'{os.getcwd()}/storage/logs/'
-    prefecture_info_by_area_id='http://127.0.0.1:8001/api/external_crawl/prefecture-info/'
     name            = 'ScrapyCrawlNewAid'
 
     allowed_domains = []
@@ -75,12 +73,7 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
     url_pattern             = ''
     deny_url_pattern        = ''
 
-    IGNORED_EXTENSIONS = [
-        'mng', 'pct', 'bmp', 'gif', 'jpg', 'jpeg', 'png', 'pst', 'psp', 'tif', 'tiff', 'ai', 'drw', 'dxf', 'eps', 'ps', 'svg',
-        'mp3', 'wma', 'ogg', 'wav', 'ra', 'aac', 'mid', 'au', 'aiff',
-        '3gp', 'asf', 'asx', 'avi', 'mov', 'mp4', 'mpg', 'qt', 'rm', 'swf', 'wmv', 'm4a',
-        'css', 'pdf', 'doc', 'exe', 'bin', 'rss', 'zip', 'rar', 'dat'
-    ]
+    
     
     exist_urls=[]
     
@@ -133,17 +126,17 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
             self.url_pattern                 = area.url_pattern
             self.deny_url_pattern            = area.deny_url_pattern
 
-            self.keyword_title=self.check_and_replace(self.keyword_title[0])
-            self.keyword_by_area=self.check_and_replace(self.keyword_by_area[0])
+            self.keyword_title=check_and_replace(self.keyword_title[0])
+            self.keyword_by_area=check_and_replace(self.keyword_by_area[0])
             if self.keyword_by_area:
                 self.keyword_title = self.keyword_title+"|"+self.keyword_by_area
             else:
                 self.keyword_title = self.keyword_title
 
-            self.keyword_abstract=self.check_and_replace(self.keyword_abstract[0])
-            self.keyword_support_detail=self.check_and_replace(self.keyword_support_detail[0])
-            self.keyword_target=self.check_and_replace(self.keyword_target[0])
-            self.keyword_application_period=self.check_and_replace(self.keyword_application_period[0])
+            self.keyword_abstract=check_and_replace(self.keyword_abstract[0])
+            self.keyword_support_detail=check_and_replace(self.keyword_support_detail[0])
+            self.keyword_target=check_and_replace(self.keyword_target[0])
+            self.keyword_application_period=check_and_replace(self.keyword_application_period[0])
 
             self.keyword_in_content          = self.keyword_abstract+'|'+self.keyword_support_detail+'|'+self.keyword_target+'|'+self.keyword_application_period
             
@@ -157,7 +150,7 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
         headers= {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:48.0) Gecko/20100101 Firefox/48.0'}
         
         for get_main_link in self.path_to_get_main_list:
-            for link in response.xpath(self.check_and_replace(get_main_link)):
+            for link in response.xpath(check_and_replace(get_main_link)):
                 category = link.xpath('./text()').get()
                 url = link.xpath('./@href').get()
                 if self.check_url(url):
@@ -169,7 +162,7 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
 
     def parse_list(self, response, category):
         for get_sub_link in self.path_to_get_sub_list:
-            for link in response.xpath(self.check_and_replace(get_sub_link)):
+            for link in response.xpath(check_and_replace(get_sub_link)):
                 url = link.xpath('./@href').get()
                 if self.check_url(url):
                     time.sleep(float(self.time))
@@ -177,12 +170,12 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
                 else:
                     logging.log(logging.WARNING,"Invalid URL: " + url)
 
-        # contact = response.xpath(self.check_and_replace(self.check_contact_info))
+        # contact = response.xpath(check_and_replace(self.check_contact_info))
         for get_title in self.path_to_get_title:
             if "|" in get_title:
-                self.title = response.xpath(self.check_and_replace(get_title.split('|')[0]))[int(get_title.split('|')[1])]
+                self.title = response.xpath(check_and_replace(get_title.split('|')[0]))[int(get_title.split('|')[1])]
             else:
-                self.title = response.xpath(self.check_and_replace(get_title))
+                self.title = response.xpath(check_and_replace(get_title))
             if self.title:
                 break
         if self.title:
@@ -191,16 +184,16 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
 
     def parse_data(self, response, category, id, approve_id):
         if self.category_status == '1':
-            get_category = self.check_and_replace(self.path_to_get_category).split('|')
+            get_category = check_and_replace(self.path_to_get_category).split('|')
             if len(get_category)==2:
                 category = response.xpath(get_category[0])[int(get_category[1])].getall()
             else:
-                category = response.xpath(self.check_and_replace(self.path_to_get_category)).getall()
+                category = response.xpath(check_and_replace(self.path_to_get_category)).getall()
 
         logging.log(logging.INFO,"check detail: " + response.url)
         updated_at = ''
         try:
-            updated_at = response.xpath(self.check_and_replace(self.update_date_info)).getall()
+            updated_at = response.xpath(check_and_replace(self.update_date_info)).getall()
         except Exception as e:
             logging.log(logging.ERROR,"<b>Error on XPATH update_at at url " + response.url+"</b>")
             logging.log(logging.ERROR,str(f"<b>{e=}, {type(e)=}</b>"))
@@ -215,13 +208,13 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
         contact_detail = ""
 
         try:
-            contact_detail = response.xpath(self.check_and_replace(self.check_contact_info)).getall()
+            contact_detail = response.xpath(check_and_replace(self.check_contact_info)).getall()
         except Exception as e:
             logging.log(logging.ERROR,"<b>Error on XPATH contact_detail at url " + response.url+"</b>")
             logging.log(logging.ERROR,str(f"<b>{e=}, {type(e)=}</b>"))
 
         try:
-            abstract = response.xpath(self.check_and_replace(self.path_to_get_abstract)).getall()
+            abstract = response.xpath(check_and_replace(self.path_to_get_abstract)).getall()
         except Exception as e:
             logging.log(logging.ERROR,"<b>Error on XPATH abstract at url " + response.url+"</b>")
             logging.log(logging.ERROR,str(f"<b>{e=}, {type(e)=}</b>"))
@@ -290,24 +283,35 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
                             return
                         
             if response.url not in self.exist_urls:
+                status=1
+                title=''.join(self.title.getall()).replace('>','').strip()
+                abstract=str(''.join(abstract).strip()) if (abstract) else ''
+                application_period=''.join(application_period)
+                support_details=''.join(support_details)
+                target=''.join(target)
+                contact_detail=''.join(contact_detail)
+                updated_at=''.join(updated_at).strip()
+                if is_sub_list_aid(response,self.path_to_get_sub_list,response.url,title,abstract,application_period,
+                                   support_details,target,contact_detail,updated_at,soup_content, self.path_to_get_content):
+                    status=6
                 return {'city_id':self.city_id,
                 'area_id':self.area_id,
-                'abstract':str(''.join(abstract).strip()) if (abstract) else '',
+                'abstract':abstract,
                 'application_end_date':"",
-                'application_period': ''.join(application_period),
+                'application_period': application_period,
                 'application_start_date':"",
                 'area':self.area,
                 'category':''.join(category).strip(),
-                'contact_detail':''.join(contact_detail),
+                'contact_detail':contact_detail,
                 'contents': soup_content,
                 'crawled_at':currentDate,
                 'institution':self.area,
-                'support_details':''.join(support_details),
-                'target':''.join(target),
-                'title':''.join(self.title.getall()).replace('>','').strip(),
+                'support_details':support_details,
+                'target':target,
+                'title':title,
                 'url':response.url,
                 'update_date':''.join(updated_at).strip(),
-                'status':1,
+                'status': status,
                 'active_url':'yes',
                 'created_at':currentDate,
                 'crawl_update':'yes'}
@@ -317,14 +321,14 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
         try:
             for get_title in self.path_to_get_title:
                 if "|" in get_title:
-                    self.title = response.xpath(self.check_and_replace(get_title.split('|')[0]))[int(get_title.split('|')[1])]
+                    self.title = response.xpath(check_and_replace(get_title.split('|')[0]))[int(get_title.split('|')[1])]
                 else:
-                    self.title = response.xpath(self.check_and_replace(get_title))
+                    self.title = response.xpath(check_and_replace(get_title))
                 if self.title:
                     break
 
             if self.title is not None:
-                self.contents = response.xpath(self.check_and_replace(self.path_to_get_content))
+                self.contents = response.xpath(check_and_replace(self.path_to_get_content))
                 if len(self.title.re(r''+self.keyword_title)):
                     return True
                 else:
@@ -350,7 +354,7 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
         #     url = url.replace('contents/lifestage/','')
         #     url = url.replace('contents/shisetu/','')
         # return True
-        if(url.split('?')[0].endswith(tuple(self.IGNORED_EXTENSIONS)) or "mailto" in url or "javascript" in url):
+        if(url.split('?')[0].endswith(tuple(IGNORED_EXTENSIONS)) or "mailto" in url or "javascript" in url):
             return False
         else:
             return True
@@ -369,13 +373,6 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
         # else:
         #     return result
         return url
-
-    def check_and_replace(self, xpath):
-        xpath=xpath.replace("'''", "")
-        if("contains" in xpath):
-            return xpath.replace('=',',')
-        else:
-            return xpath
 
     def setUplogs(self, logfile_path):
         log_file = self.log_file_path + logfile_path

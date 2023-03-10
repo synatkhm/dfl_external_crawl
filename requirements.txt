@@ -12,3 +12,4 @@ scrapy==2.6.1
 pyopenssl==22.0.0
 cryptography==38.0.4
 pandas
+bs4
