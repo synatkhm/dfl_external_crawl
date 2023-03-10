@@ -1,7 +1,7 @@
 # dfl_external_crawl
 
 # install environment
-pip install -r requirements.txt 
+bash install.sh
 
 # start system
 bash start.sh

@@ -22,15 +22,15 @@ class DataController(Controller):
         
         # get prefictur information
         pre_info=Request(Api.prefecture_info, user=self.user).get()
-        
         cities = CitiesModel().from_json(pre_info['data']['city'])
+
         areas = AreasModel().from_json(pre_info['data']['area'])
         city_list = CitiesModel().array_to_json(cities)
         area_list = AreasModel().array_to_json(areas)
         return super().templates.TemplateResponse("home.html", {"request": request,'email':self.user["user"]['email'],'area_list': area_list, 'city_list': city_list})
 
     def crawl_new_aid(self, request, area_id):
-        # os.system(f'python {os.getcwd()}/src/scrapy_crawl/scrapy_loader.py {area_id} { self.user["token"].split("|")[1]}')
+        os.system(f'python {os.getcwd()}/src/scrapy_crawl/scrapy_loader.py {area_id} { self.user["token"].split("|")[1]}')
         return JSONResponse(status_code=status.HTTP_200_OK, content={'status': True, 'message': 'Crawl new aid success.'})
     
     def get_crawl_new_aid_log(self, request, area_id):

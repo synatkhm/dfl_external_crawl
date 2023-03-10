@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-
+from pydantic.schema import Optional
 class CityModel(BaseModel):
     id: int
     city_name: str
@@ -9,9 +9,9 @@ class CityModel(BaseModel):
     support_detail: list[str]
     target: list[str]
     application_period: list[str]
-    created_at: datetime
-    updated_at: datetime
-    code: None
+    created_at: str
+    updated_at: str
+    code: Optional[str]
 
 class CitiesModel(BaseModel):
     cities: list[CityModel]=[]

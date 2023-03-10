@@ -132,6 +132,7 @@ function add_data_into_table(jsonData) {
         data.push(data_row);
     });
     var table = $('#dataTable').DataTable();
+    table.clear().draw();
     table.rows.add(data).draw();
 }
 
@@ -147,10 +148,12 @@ async function getData() {
                         if (response.data != "") {
                             var data = JSON.parse(response.data);
                             add_data_into_table(data);
+                            return
                             //var table = $('#dataTable');
 
                         }
                     }
+                    add_data_into_table([]);
                 })
         } catch (e) {
             console.log(e.message)

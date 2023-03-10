@@ -18,7 +18,7 @@ from src.models.city_model import CityModel
 from datetime import datetime
 from src.scrapy_crawl.utils.check_and_replace import check_and_replace
 from src.scrapy_crawl.utils.check_sublist import is_sub_list_aid
-from src.utils.api import prefecture_info_by_area_id
+from src.utils.api import Api
 from src.scrapy_crawl.utils.utils import IGNORED_EXTENSIONS, emoji_pattern
 
 
@@ -88,7 +88,7 @@ class ScrapyCrawlNewAidSpider(scrapy.Spider):
         
     def get_prefecture_info_by_area_id(self):
         headers = {"Authorization": f"Bearer {self.token}"}
-        result=requests.get(self.prefecture_info_by_area_id + self.area_id, headers=headers)
+        result=requests.get(Api.prefecture_info_by_area_id + self.area_id, headers=headers)
         dict_result= json.loads(str(result.text))
         if dict_result['status']:
             area=AreaModel.parse_obj(dict_result['data']['area'])

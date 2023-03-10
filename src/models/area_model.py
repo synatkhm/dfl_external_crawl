@@ -26,9 +26,9 @@ class AreaModel(BaseModel):
     category_status: int
     dynamic_website: int
     time: int
-    code: None
+    code: Optional[str]
     search_keyword: Optional[list[str]]
-    tag_for_remove: None
+    tag_for_remove: Optional[str]
     check_tag_for_remove: int
     url_pattern: Optional[str]
     deny_url_pattern: Optional[int]
