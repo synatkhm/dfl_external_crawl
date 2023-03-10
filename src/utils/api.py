@@ -1,6 +1,6 @@
 
 class Api:
-    base_url='http://127.0.0.1:8001/api/'
+    base_url='https://data.digitalfuturelab.jp/api/'
     login=base_url+"login"
     prefecture_info=base_url+'external_crawl/prefecture-info'
     prefecture_info_by_area_id=base_url+'external_crawl/prefecture-info/'
