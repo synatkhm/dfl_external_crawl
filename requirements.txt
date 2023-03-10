@@ -1,0 +1,14 @@
+fastapi
+fastapi-sessions
+uvicorn[standard]
+decouple
+itsdangerous
+fastapi_login
+jinja2==3.0.3
+requests
+timedelta
+pydantic
+scrapy==2.6.1
+pyopenssl==22.0.0
+cryptography==38.0.4
+pandas

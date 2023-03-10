@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs</title>
+    <style>
+        body {
+            font-family: 'Open Sans';
+            font-size: 14px;
+        }
+
+        #body {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            height: 500px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #head {
+            padding-left: 20px;
+            padding-bottom: 8;
+            flex-shrink: 0;
+        }
+
+        #content {
+            background-color: black;
+            overflow-y: auto;
+            padding-left: 20px
+                /*height: 100%;*/
+        }
+
+        #data {
+            line-height: 1.6;
+        }
+
+        strong {
+            color: aquamarine;
+        }
+
+        b {
+            color: orangered
+        }
+
+        #foot {
+            height: 10px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="body">
+        <div id="head">
+        </div>
+        <div id="content">
+            <p id="data" style="color: white; background-color:black"></p>
+        </div>
+        <div id="foot">
+        </div>
+    </div>
+</body>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    var timer;
+    window.onload = function exampleFunction() {
+        setHeight();
+        getLogsData();
+        start();
+    }
+    function start() {
+        timer = setInterval(function () {
+            getLogsData();
+        }, 4000);
+    }
+    function stop() {
+        clearInterval(timer);
+    }
+    function setHeight() {
+        var b = document.getElementById("body");
+        b.style.height = (screen.height * 0.90) + "px";
+    }
+    async function getLogsData() {
+        try {
+            var url = window.location.href;
+            axios.post(url)
+                .then(function (response) {
+                    if (response.status == 200) {
+                        if (response.data != "") {
+                            var d = document.getElementById("data");
+                            d.innerHTML = response.data;
+                            scrollToBottom();
+                        }
+
+                        if (response.data.includes("scheduler/enqueued/memory")) {
+                            stop();
+                            return;
+                        }
+                    }
+                })
+        } catch (e) {
+            console.log(e.message)
+            // stop();
+        }
+    }
+    function scrollToBottom() {
+        var elem = document.getElementById('content');
+        elem.scrollTop = elem.scrollHeight;
+    }
+</script>
+
+</html>
