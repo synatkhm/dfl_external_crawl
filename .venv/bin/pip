@@ -1,4 +1,4 @@
-#!/Users/apple/Documents/DFL/work/dfl_external_crawl/.venv/bin/python3.10
+#!/Users/apple/Documents/DFL/work/dfl_external_crawl/.venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
